@@ -1,0 +1,79 @@
+﻿Build started 30/09/2014 13:36:24.
+     1>Project "E:\VIBOT\Semester III\Robotics Project\GeodesicsOnMeshes\build\FastMarching\MeshGeodesics.vcxproj" on node 2 (Rebuild target(s)).
+     1>CustomBuild:
+         Building Custom Rule E:/VIBOT/Semester III/Robotics Project/GeodesicsOnMeshes/FastMarching/CMakeLists.txt
+         CMake does not need to re-run because E:\VIBOT\Semester III\Robotics Project\GeodesicsOnMeshes\build\FastMarching\CMakeFiles\generate.stamp is up-to-date.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"E:\VIBOT\Semester III\Robotics Project\GeodesicsOnMeshes\FastMarching\gw_core" /I"E:\VIBOT\Semester III\Robotics Project\GeodesicsOnMeshes\FastMarching\gw_geodesic" /I"E:\VIBOT\Semester III\Robotics Project\GeodesicsOnMeshes\build\FastMarching\gw_maths" /nologo /W3 /WX- /O2 /Ob2 /D WIN32 /D _WINDOWS /D NDEBUG /D "CMAKE_INTDIR=\"Release\"" /D _MBCS /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"MeshGeodesics.dir\Release\\" /Fd"MeshGeodesics.dir\Release\vc120.pdb" /Gd /TP /errorReport:prompt ..\..\FastMarching\gw_core\GW_Config.cpp ..\..\FastMarching\gw_core\GW_Face.cpp ..\..\FastMarching\gw_core\GW_FaceIterator.cpp ..\..\FastMarching\gw_core\GW_Mesh.cpp ..\..\FastMarching\gw_core\GW_SmartCounter.cpp ..\..\FastMarching\gw_core\GW_Vertex.cpp ..\..\FastMarching\gw_core\GW_VertexIterator.cpp ..\..\FastMarching\gw_geodesic\GW_GeodesicFace.cpp ..\..\FastMarching\gw_geodesic\GW_GeodesicMesh.cpp ..\..\FastMarching\gw_geodesic\GW_GeodesicPath.cpp ..\..\FastMarching\gw_geodesic\GW_GeodesicPoint.cpp ..\..\FastMarching\gw_geodesic\GW_GeodesicVertex.cpp ..\..\FastMarching\gw_geodesic\GW_TriangularInterpolation_Linear.cpp ..\..\FastMarching\gw_geodesic\GW_TriangularInterpolation_Quadratic.cpp ..\..\FastMarching\gw_geodesic\GW_TriangularInterpolation_Cubic.cpp
+         GW_Config.cpp
+         GW_Face.cpp
+         GW_FaceIterator.cpp
+         GW_Mesh.cpp
+         GW_SmartCounter.cpp
+         GW_Vertex.cpp
+         GW_VertexIterator.cpp
+         GW_GeodesicFace.cpp
+         GW_GeodesicMesh.cpp
+     1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\utility(144): warning C4244: 'initializing' : conversion from 'GW::GW_Float' to 'const float', possible loss of data
+                 e:\vibot\semester iii\robotics project\geodesicsonmeshes\fastmarching\gw_geodesic\GW_GeodesicMesh.inl(236) : see reference to function template instantiation 'std::pair<const _Kty,_Ty>::pair<GW::GW_Float&,GW::GW_GeodesicVertex*&,void>(_Other1,_Other2)' being compiled
+                 with
+                 [
+                     _Kty=float
+         ,            _Ty=GW::GW_GeodesicVertex *
+         ,            _Other1=GW::GW_Float &
+         ,            _Other2=GW::GW_GeodesicVertex *&
+                 ]
+                 e:\vibot\semester iii\robotics project\geodesicsonmeshes\fastmarching\gw_geodesic\GW_GeodesicMesh.inl(236) : see reference to function template instantiation 'std::pair<const _Kty,_Ty>::pair<GW::GW_Float&,GW::GW_GeodesicVertex*&,void>(_Other1,_Other2)' being compiled
+                 with
+                 [
+                     _Kty=float
+         ,            _Ty=GW::GW_GeodesicVertex *
+         ,            _Other1=GW::GW_Float &
+         ,            _Other2=GW::GW_GeodesicVertex *&
+                 ]
+         GW_GeodesicPath.cpp
+     1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\utility(144): warning C4244: 'initializing' : conversion from 'GW::GW_Float' to 'const float', possible loss of data
+                 e:\vibot\semester iii\robotics project\geodesicsonmeshes\fastmarching\gw_geodesic\GW_GeodesicMesh.inl(236) : see reference to function template instantiation 'std::pair<const _Kty,_Ty>::pair<GW::GW_Float&,GW::GW_GeodesicVertex*&,void>(_Other1,_Other2)' being compiled
+                 with
+                 [
+                     _Kty=float
+         ,            _Ty=GW::GW_GeodesicVertex *
+         ,            _Other1=GW::GW_Float &
+         ,            _Other2=GW::GW_GeodesicVertex *&
+                 ]
+                 e:\vibot\semester iii\robotics project\geodesicsonmeshes\fastmarching\gw_geodesic\GW_GeodesicMesh.inl(236) : see reference to function template instantiation 'std::pair<const _Kty,_Ty>::pair<GW::GW_Float&,GW::GW_GeodesicVertex*&,void>(_Other1,_Other2)' being compiled
+                 with
+                 [
+                     _Kty=float
+         ,            _Ty=GW::GW_GeodesicVertex *
+         ,            _Other1=GW::GW_Float &
+         ,            _Other2=GW::GW_GeodesicVertex *&
+                 ]
+         GW_GeodesicPoint.cpp
+         GW_GeodesicVertex.cpp
+         GW_TriangularInterpolation_Linear.cpp
+         GW_TriangularInterpolation_Quadratic.cpp
+         GW_TriangularInterpolation_Cubic.cpp
+         Generating Code...
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\Lib.exe /OUT:"E:\VIBOT\Semester III\Robotics Project\GeodesicsOnMeshes\build\bin\Release\MeshGeodesics.lib" /NOLOGO /MACHINE:X64 MeshGeodesics.dir\Release\GW_Config.obj
+         MeshGeodesics.dir\Release\GW_Face.obj
+         MeshGeodesics.dir\Release\GW_FaceIterator.obj
+         MeshGeodesics.dir\Release\GW_Mesh.obj
+         MeshGeodesics.dir\Release\GW_SmartCounter.obj
+         MeshGeodesics.dir\Release\GW_Vertex.obj
+         MeshGeodesics.dir\Release\GW_VertexIterator.obj
+         MeshGeodesics.dir\Release\GW_GeodesicFace.obj
+         MeshGeodesics.dir\Release\GW_GeodesicMesh.obj
+         MeshGeodesics.dir\Release\GW_GeodesicPath.obj
+         MeshGeodesics.dir\Release\GW_GeodesicPoint.obj
+         MeshGeodesics.dir\Release\GW_GeodesicVertex.obj
+         MeshGeodesics.dir\Release\GW_TriangularInterpolation_Linear.obj
+         MeshGeodesics.dir\Release\GW_TriangularInterpolation_Quadratic.obj
+         MeshGeodesics.dir\Release\GW_TriangularInterpolation_Cubic.obj
+         MeshGeodesics.vcxproj -> E:\VIBOT\Semester III\Robotics Project\GeodesicsOnMeshes\build\bin\Release\MeshGeodesics.lib
+     1>Done Building Project "E:\VIBOT\Semester III\Robotics Project\GeodesicsOnMeshes\build\FastMarching\MeshGeodesics.vcxproj" (Rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:10.72
