@@ -35,6 +35,7 @@
 #include "vtkFastMarchingGeodesicDistance.h"
 #include "vtkIdList.h"
 #include "vtkXMLPolyDataReader.h"
+#include "vtkPolyDataReader.h"
 #include "vtkXMLPolyDataWriter.h"
 #include "vtkNew.h"
 #include "vtkPointData.h"
@@ -47,6 +48,24 @@
 #include "vtkPolygonalSurfaceContourLineInterpolator.h"
 #include "vtkProperty.h"
 #include "vtkPolyDataCollection.h"
+
+#include <pcl/io/io.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/features/integral_image_normal.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/surface/organized_fast_mesh.h>
+#include <pcl/point_types.h>
+//vtk stuff
+#include <pcl/io/vtk_io.h>
+#include <pcl/io/vtk_lib_io.h>
+#include <pcl/ros/conversions.h>
+
+#include <pcl/surface/processing.h>
+#include <pcl/surface/vtk_smoothing/vtk.h>
+#include <pcl/surface/vtk_smoothing/vtk_mesh_smoothing_laplacian.h>
+#include <pcl/surface/vtk_smoothing/vtk_utils.h>
+#include <vtkSmoothPolyDataFilter.h>
+
 
 
 // This interactor style invokes the fast marching geodesic filter when a
@@ -157,7 +176,10 @@ public:
   vtkNew< vtkOrientedGlyphContourRepresentation > ContourRep;
 };
 
+
 vtkStandardNewMacro(FastMarchingHelper);
+
+
 
 int main(int argc, char* argv[])
 {
@@ -166,18 +188,65 @@ int main(int argc, char* argv[])
     std::cerr << "Args: Bunny.vtp OutputMesh.vtp [--maxDist distance] "
       << "[--propagationWts PointDataFieldName]" << std::endl;
     }
+  vtkNew<vtkTimerLog> timer;
 
-  vtkNew< vtkXMLPolyDataReader > reader;
+  /** PCL **/
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::io::loadPCDFile(argv[1], *cloud);
+
+  // Organized Fast Mesh Algorithm
+  pcl::OrganizedFastMesh<pcl::PointXYZ> ofm;
+  ofm.setTrianglePixelSize(3);
+  ofm.setTriangulationType(pcl::OrganizedFastMesh<pcl::PointXYZ>::TRIANGLE_ADAPTIVE_CUT);
+
+  // Triangulate using FastMesh
+  ofm.setInputCloud(cloud);
+
+  //reconstruct mesh
+  pcl::PolygonMesh triangles;
+
+  cout << endl << "Computing Mesh ..." << endl;
+  timer->StartTimer();
+
+  ofm.reconstruct(triangles);
+
+  timer->StopTimer();
+  cout << "Mesh took " << timer->GetElapsedTime() << " s." << endl;
+
+  
+
+
+  /** VTK **/
+  vtkSmartPointer<vtkPolyData> vtk_polygons;
+  cout << endl << "Converting to VTK ..." << endl;
+  timer->StartTimer();
+
+  pcl::VTKUtils::convertToVTK(triangles, vtk_polygons);
+
+  timer->StopTimer();
+  cout << "Conversion took " << timer->GetElapsedTime() << " s." << endl;
+
+  // Smooth using Laplacian
+  //vtkSmartPointer<vtkSmoothPolyDataFilter> vtk_smoother = vtkSmoothPolyDataFilter::New();
+  //vtk_smoother->SetInputData(vtk_polygons);
+
+  //vtk_smoother->SetNumberOfIterations(20);
+  //vtk_smoother->SetRelaxationFactor(0.01f);
+  //vtk_smoother->SetFeatureEdgeSmoothing(false);
+  //vtk_smoother->SetFeatureAngle(45.f);
+  //vtk_smoother->SetEdgeAngle(15.f);
+  //vtk_smoother->SetBoundarySmoothing(true);
+  //vtk_smoother->Update();
+  //vtk_polygons = vtk_smoother->GetOutput();
+
+
   vtkNew<vtkRenderer> ren;
   vtkNew<vtkRenderWindow> renWin;
   vtkNew<vtkActor> actor;
   renWin->AddRenderer(ren.GetPointer());
   vtkNew<vtkRenderWindowInteractor> iren;
   iren->SetRenderWindow(renWin.GetPointer());
-
-  reader->SetFileName(argv[1]);
-  reader->Update();
-
   vtkNew<FastMarchingHelper> helper;
 
   // Parse args
@@ -188,25 +257,33 @@ int main(int argc, char* argv[])
       {
       helper->Geodesic->SetDistanceStopCriterion(atof(argv[i+1]));
       }
-    if (strcmp(argv[i], "--propagationWts") == 0)
-      {
-      helper->Geodesic->SetPropagationWeights(
-        reader.GetPointer()->GetOutput()->GetPointData()->GetArray(argv[i+1]));
-      }
-    if (strcmp(argv[i], "--exclusionContour") == 0)
-      {
-      helper->SetupExclusionContour(iren.GetPointer(),
-          reader->GetOutput(), actor.GetPointer());
-      }
+    //if (strcmp(argv[i], "--propagationWts") == 0)
+    //  {
+    //  helper->Geodesic->SetPropagationWeights(
+    //    reader.GetPointer()->GetOutput()->GetPointData()->GetArray(argv[i+1]));
+    //  }
+    //if (strcmp(argv[i], "--exclusionContour") == 0)
+    //  {
+    //  helper->SetupExclusionContour(iren.GetPointer(),
+    //      reader->GetOutput(), actor.GetPointer());
+    //  }
     }
+
+  cout << endl << "Computing Normals ..." << endl;
+  timer->StartTimer();
 
   // Compute normals for shaded surfaces
   vtkNew<vtkPolyDataNormals> normals;
-  normals->SetInputConnection(reader.GetPointer()->GetOutputPort());
+  
+  //normals->SetInputConnection(reader.GetPointer()->GetOutputPort());
+  normals->SetInputData(vtk_polygons);
   normals->SplittingOff();
   normals->ComputeCellNormalsOn();
   normals->ComputePointNormalsOff();
   normals->Update();
+
+  timer->StopTimer();
+  cout << "Normals calculation took " << timer->GetElapsedTime() << " s." << endl;
 
   // mapper - actor
   helper->Mapper->SetInputConnection(normals.GetPointer()->GetOutputPort());
@@ -225,7 +302,8 @@ int main(int argc, char* argv[])
   iren->SetPicker(pointPicker.GetPointer());
 
   // the geodesic filter
-  helper->Geodesic->SetInputConnection(reader.GetPointer()->GetOutputPort());
+  //helper->Geodesic->SetInputConnection(reader.GetPointer()->GetOutputPort());
+  helper->Geodesic->SetInputData(vtk_polygons);
 
   // Set the point data field name
   helper->Geodesic->SetFieldDataName("FMMDist");

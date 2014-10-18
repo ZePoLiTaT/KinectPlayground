@@ -7,7 +7,7 @@
 
 
 #include "vtkSmartPointer.h"
-
+#include "vtkTimerLog.h"
 #include "vtkPolyData.h"
 #include "vtkPolyDataMapper.h"
 #include "vtkActor.h"
@@ -33,6 +33,24 @@
 #include "vtkPolygonalSurfaceContourLineInterpolator2.h"
 
 
+#include <pcl/io/io.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/features/integral_image_normal.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/surface/organized_fast_mesh.h>
+#include <pcl/point_types.h>
+//vtk stuff
+#include <pcl/io/vtk_io.h>
+#include <pcl/io/vtk_lib_io.h>
+#include <pcl/ros/conversions.h>
+
+#include <pcl/surface/processing.h>
+#include <pcl/surface/vtk_smoothing/vtk.h>
+#include <pcl/surface/vtk_smoothing/vtk_mesh_smoothing_laplacian.h>
+#include <pcl/surface/vtk_smoothing/vtk_utils.h>
+#include <vtkSmoothPolyDataFilter.h>
+
+
 int main(int argc, char*argv[])
 {
   if (argc < 2)
@@ -45,8 +63,48 @@ int main(int argc, char*argv[])
     return EXIT_FAILURE;
     }
 
-  vtkNew< vtkXMLPolyDataReader > reader;
-  reader->SetFileName(argv[1]);
+  vtkNew<vtkTimerLog> timer;
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::io::loadPCDFile(argv[1], *cloud);
+
+  // Organized Fast Mesh Algorithm
+  pcl::OrganizedFastMesh<pcl::PointXYZ> ofm;
+  ofm.setTrianglePixelSize(3);
+  ofm.setTriangulationType(pcl::OrganizedFastMesh<pcl::PointXYZ>::TRIANGLE_ADAPTIVE_CUT);
+
+  // Triangulate using FastMesh
+  ofm.setInputCloud(cloud);
+
+  //reconstruct mesh
+  pcl::PolygonMesh triangles;
+
+  cout << endl << "Computing Mesh ..." << endl;
+  timer->StartTimer();
+
+  ofm.reconstruct(triangles);
+
+  timer->StopTimer();
+  cout << "Mesh took " << timer->GetElapsedTime() << " s." << endl;
+
+
+
+
+  /** VTK **/
+  vtkSmartPointer<vtkPolyData> vtk_polygons;
+  cout << endl << "Converting to VTK ..." << endl;
+  timer->StartTimer();
+
+  pcl::VTKUtils::convertToVTK(triangles, vtk_polygons);
+
+  timer->StopTimer();
+  cout << "Conversion took " << timer->GetElapsedTime() << " s." << endl;
+
+
+
+
+  //vtkNew< vtkXMLPolyDataReader > reader;
+  //reader->SetFileName(argv[1]);
 
   vtkNew<vtkPolyDataNormals> normals;
 
@@ -58,8 +116,9 @@ int main(int argc, char*argv[])
   // specified.
   if (fabs(distanceOffset) > 1e-6)
     {
-    normals->SetInputConnection(reader->GetOutputPort());
-    normals->SplittingOff();
+    //normals->SetInputConnection(reader->GetOutputPort());
+	normals->SetInputData(vtk_polygons);
+	normals->SplittingOff();
 
     // vtkPolygonalSurfacePointPlacer needs cell normals
     // vtkPolygonalSurfaceContourLineInterpolator needs vertex normals
@@ -69,11 +128,14 @@ int main(int argc, char*argv[])
     }
 
   vtkPolyData *pd = (fabs(distanceOffset) > 1e-6) ? 
-      normals->GetOutput() : reader->GetOutput();
+	  normals->GetOutput() : vtk_polygons;
+      //normals->GetOutput() : reader->GetOutput();
 
   vtkNew<vtkPolyDataMapper> mapper;
-  mapper->SetInputConnection(fabs(distanceOffset) > 1e-6 ? 
-      normals->GetOutputPort() : reader->GetOutputPort());
+  
+  mapper->SetInputData(fabs(distanceOffset) > 1e-6 ? 
+	  normals->GetOutput() : vtk_polygons );
+      //normals->GetOutputPort() : reader->GetOutputPort());
 
   vtkNew<vtkActor> actor;
   actor->SetMapper(mapper.GetPointer());
@@ -106,6 +168,7 @@ int main(int argc, char*argv[])
   pointPlacer->AddProp(actor.GetPointer());
   pointPlacer->GetPolys()->AddItem( pd );
   rep->SetPointPlacer(pointPlacer.GetPointer());
+  
 
   // Snap the contour nodes to the closest vertices on the mesh
   pointPlacer->SnapToClosestPointOn();
@@ -122,6 +185,9 @@ int main(int argc, char*argv[])
     }
 
   renWin->Render();
+
+  vtkIndent vid;
+  
   iren->Initialize();
   contourWidget->EnabledOn();
 
@@ -136,6 +202,8 @@ int main(int argc, char*argv[])
   */
 
   iren->Start();
+
+
 
   return EXIT_SUCCESS;
 }
